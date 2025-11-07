@@ -7,7 +7,7 @@ use ark_serialize::SerializationError;
 use rayon::prelude::*;
 use serde::ser::SerializeSeq;
 use serde::{Serializer, de};
-use std::str::FromStr;
+use taceo_ark_serde_compat::CheckElement;
 
 type SerResult<T> = Result<T, SerializationError>;
 
@@ -18,6 +18,7 @@ macro_rules! impl_serde_for_curve {
 
 mod $mod_name {
 
+    use std::str::FromStr;
     use $curve::{$config, Fq, Fq2, Fr};
     use ark_ff::BigInt;
     use ark_serialize::{CanonicalDeserialize, SerializationError};
@@ -588,6 +589,7 @@ where
         check: CheckElement,
     ) -> SerResult<Self::G1Affine>;
     /// Deserializes element of G2 from strings representing projective coordinates
+    ///
     fn g2_from_strings_projective(
         x0: &str,
         x1: &str,
@@ -656,19 +658,6 @@ pub trait CircomArkworksPrimeFieldBridge: PrimeField {
     fn montgomery_bigint_from_reader(reader: impl Read) -> SerResult<Self>;
     /// deserializes field elements that are multiplied by R^2 already (elements in Groth16 zkey are of this form)
     fn from_reader_for_groth16_zkey(reader: impl Read) -> SerResult<Self>;
-}
-
-/// Indicates whether we should check if deserialized are valid
-/// points on the curves.
-/// `No` indicates to skip those checks, which is by orders of magnitude
-/// faster, but could potentially result in undefined behaviour. Use
-/// only with care.
-#[derive(Debug, Clone, Copy)]
-pub enum CheckElement {
-    /// Indicates to perform curve checks
-    Yes,
-    /// Indicates to skip curve checks
-    No,
 }
 
 #[cfg(feature = "bn254")]

@@ -11,7 +11,7 @@ use ark_ec::{AffineRepr as _, CurveGroup as _};
 use serde::{Serializer, de, ser::SerializeSeq as _};
 use std::str::FromStr;
 
-use crate::SerdeCompatError;
+use crate::{CheckElement, SerdeCompatError};
 
 /// Serialize a BN254 Fr (scalar field) element as a decimal string.
 ///
@@ -85,7 +85,7 @@ pub fn serialize_gt<S: Serializer>(p: &ark_bn254::Fq12, ser: S) -> Result<S::Ok,
 /// Serialize a sequence of BN254 G1 points as an array of projective coordinate arrays.
 ///
 /// Each G1 point is serialized as `[x, y, z]` where each coordinate is a decimal string.
-pub fn serialize_g1_sequence<S: Serializer>(
+pub fn serialize_g1_seq<S: Serializer>(
     ps: &[ark_bn254::G1Affine],
     ser: S,
 ) -> Result<S::Ok, S::Error> {
@@ -105,10 +105,10 @@ fn g1_to_strings_projective(p: &ark_bn254::G1Affine) -> [String; 3] {
     }
 }
 
-struct Bn254G1Visitor;
-struct Bn254G2Visitor;
+struct Bn254G1Visitor(CheckElement);
+struct Bn254G2Visitor(CheckElement);
 struct Bn254GtVisitor;
-struct Bn254G1SeqVisitor;
+struct Bn254G1SeqVisitor(CheckElement);
 
 /// Deserialize a BN254 Fr (scalar field) element from a decimal string.
 ///
@@ -139,7 +139,14 @@ pub fn deserialize_g1<'de, D>(deserializer: D) -> Result<ark_bn254::G1Affine, D:
 where
     D: de::Deserializer<'de>,
 {
-    deserializer.deserialize_seq(Bn254G1Visitor)
+    deserializer.deserialize_seq(Bn254G1Visitor(CheckElement::Yes))
+}
+
+pub fn deserialize_g1_unchecked<'de, D>(deserializer: D) -> Result<ark_bn254::G1Affine, D::Error>
+where
+    D: de::Deserializer<'de>,
+{
+    deserializer.deserialize_seq(Bn254G1Visitor(CheckElement::No))
 }
 
 /// Deserialize a BN254 G2 point from a 3x2 array of coordinate strings.
@@ -151,7 +158,14 @@ pub fn deserialize_g2<'de, D>(deserializer: D) -> Result<ark_bn254::G2Affine, D:
 where
     D: de::Deserializer<'de>,
 {
-    deserializer.deserialize_seq(Bn254G2Visitor)
+    deserializer.deserialize_seq(Bn254G2Visitor(CheckElement::Yes))
+}
+
+pub fn deserialize_g2_unchecked<'de, D>(deserializer: D) -> Result<ark_bn254::G2Affine, D::Error>
+where
+    D: de::Deserializer<'de>,
+{
+    deserializer.deserialize_seq(Bn254G2Visitor(CheckElement::No))
 }
 
 /// Deserialize a BN254 GT (target group) element from a 2x3x2 array of strings.
@@ -168,19 +182,27 @@ where
 ///
 /// Each G1 point is deserialized from `[x, y, z]` format. Validates that all points are
 /// on the curve and in the correct subgroup.
-pub fn deserialize_g1_sequence<'de, D>(
+pub fn deserialize_g1_seq<'de, D>(deserializer: D) -> Result<Vec<ark_bn254::G1Affine>, D::Error>
+where
+    D: de::Deserializer<'de>,
+{
+    deserializer.deserialize_seq(Bn254G1SeqVisitor(CheckElement::Yes))
+}
+
+pub fn deserialize_g1_seq_unchecked<'de, D>(
     deserializer: D,
 ) -> Result<Vec<ark_bn254::G1Affine>, D::Error>
 where
     D: de::Deserializer<'de>,
 {
-    deserializer.deserialize_seq(Bn254G1SeqVisitor)
+    deserializer.deserialize_seq(Bn254G1SeqVisitor(CheckElement::No))
 }
 
 fn g1_from_strings_projective(
     x: &str,
     y: &str,
     z: &str,
+    check: CheckElement,
 ) -> Result<ark_bn254::G1Affine, SerdeCompatError> {
     let x = ark_bn254::Fq::from_str(x).map_err(|_| SerdeCompatError)?;
     let y = ark_bn254::Fq::from_str(y).map_err(|_| SerdeCompatError)?;
@@ -189,10 +211,11 @@ fn g1_from_strings_projective(
     if p.is_zero() {
         return Ok(p);
     }
-    if !p.is_on_curve() {
+    let curve_check = matches!(check, CheckElement::Yes);
+    if curve_check && !p.is_on_curve() {
         return Err(SerdeCompatError);
     }
-    if !p.is_in_correct_subgroup_assuming_on_curve() {
+    if curve_check && !p.is_in_correct_subgroup_assuming_on_curve() {
         return Err(SerdeCompatError);
     }
     Ok(p)
@@ -205,6 +228,7 @@ fn g2_from_strings_projective(
     y1: &str,
     z0: &str,
     z1: &str,
+    check: CheckElement,
 ) -> Result<ark_bn254::G2Affine, SerdeCompatError> {
     let x0 = ark_bn254::Fq::from_str(x0).map_err(|_| SerdeCompatError)?;
     let x1 = ark_bn254::Fq::from_str(x1).map_err(|_| SerdeCompatError)?;
@@ -220,10 +244,11 @@ fn g2_from_strings_projective(
     if p.is_zero() {
         return Ok(p);
     }
-    if !p.is_on_curve() {
+    let curve_check = matches!(check, CheckElement::Yes);
+    if curve_check && !p.is_on_curve() {
         return Err(SerdeCompatError);
     }
-    if !p.is_in_correct_subgroup_assuming_on_curve() {
+    if curve_check && !p.is_in_correct_subgroup_assuming_on_curve() {
         return Err(SerdeCompatError);
     }
     Ok(p)
@@ -253,7 +278,7 @@ impl<'de> de::Visitor<'de> for Bn254G1Visitor {
         if seq.next_element::<String>()?.is_some() {
             Err(de::Error::invalid_length(4, &self))
         } else {
-            g1_from_strings_projective(&x, &y, &z)
+            g1_from_strings_projective(&x, &y, &z, self.0)
                 .map_err(|_| de::Error::custom("Invalid projective point on G1.".to_owned()))
         }
     }
@@ -299,7 +324,7 @@ impl<'de> de::Visitor<'de> for Bn254G2Visitor {
                 z.len()
             )))
         } else {
-            g2_from_strings_projective(&x[0], &x[1], &y[0], &y[1], &z[0], &z[1])
+            g2_from_strings_projective(&x[0], &x[1], &y[0], &y[1], &z[0], &z[1], self.0)
                 .map_err(|_| de::Error::custom("Invalid projective point on G2.".to_owned()))
         }
     }
@@ -391,9 +416,9 @@ impl<'de> de::Visitor<'de> for Bn254G1SeqVisitor {
                 return Err(de::Error::invalid_length(point.len(), &self));
             } else {
                 values.push(
-                    g1_from_strings_projective(&point[0], &point[1], &point[2]).map_err(|_| {
-                        de::Error::custom("Invalid projective point on G1.".to_owned())
-                    })?,
+                    g1_from_strings_projective(&point[0], &point[1], &point[2], self.0).map_err(
+                        |_| de::Error::custom("Invalid projective point on G1.".to_owned()),
+                    )?,
                 );
             }
         }

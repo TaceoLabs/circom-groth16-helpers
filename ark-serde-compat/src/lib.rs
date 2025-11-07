@@ -51,6 +51,19 @@ pub mod bn254;
 #[cfg(any(feature = "bn254", feature = "babyjubjub"))]
 pub(crate) struct SerdeCompatError;
 
+/// Indicates whether we should check if deserialized are valid
+/// points on the curves.
+/// `No` indicates to skip those checks, which is by orders of magnitude
+/// faster, but could potentially result in undefined behaviour. Use
+/// only with care.
+#[derive(Debug, Clone, Copy)]
+pub enum CheckElement {
+    /// Indicates to perform curve checks
+    Yes,
+    /// Indicates to skip curve checks
+    No,
+}
+
 /// Serialize a prime field element as a decimal string.
 ///
 /// This function serializes any arkworks prime field element to its decimal string
@@ -106,7 +119,10 @@ impl<'de, F: PrimeField> de::Visitor<'de> for PrimeFieldVisitor<F> {
     type Value = F;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        formatter.write_str("a sting representing a bn254 Fr element")
+        formatter.write_str(&format!(
+            "a sting representing a field element in F_{}",
+            F::MODULUS
+        ))
     }
 
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>

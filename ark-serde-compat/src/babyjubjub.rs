@@ -14,7 +14,7 @@ use serde::{
 };
 use std::str::FromStr;
 
-use crate::SerdeCompatError;
+use crate::{CheckElement, SerdeCompatError};
 
 /// Serialize a BabyJubJub Fr (scalar field) element as a decimal string.
 ///
@@ -40,7 +40,7 @@ pub fn serialize_fq<S: Serializer>(
 ///
 /// The EdwardsAffine point is serialized as `[x, y]` where each coordinate
 /// is a decimal string representing an Fq element.
-pub fn serialize_babyjubjub_affine<S: Serializer>(
+pub fn serialize_affine<S: Serializer>(
     p: &taceo_ark_babyjubjub::EdwardsAffine,
     ser: S,
 ) -> Result<S::Ok, S::Error> {
@@ -54,7 +54,7 @@ pub fn serialize_babyjubjub_affine<S: Serializer>(
 /// Serialize a sequence of BabyJubJub affine points as an array of coordinate pair arrays.
 ///
 /// Each EdwardsAffine point is serialized as `[x, y]` where each coordinate is a decimal string.
-pub fn serialize_babyjubjub_affine_sequence<S: Serializer>(
+pub fn serialize_affine_seq<S: Serializer>(
     ps: &[taceo_ark_babyjubjub::EdwardsAffine],
     ser: S,
 ) -> Result<S::Ok, S::Error> {
@@ -66,20 +66,10 @@ pub fn serialize_babyjubjub_affine_sequence<S: Serializer>(
     seq.end()
 }
 
-/// Serialize a BabyJubJub Fq element as a decimal string.
-///
-/// This function is an alias for compatibility. Use `serialize_fq` for consistency.
-pub fn serialize_babyjubjub_fq<S: Serializer>(
-    p: &taceo_ark_babyjubjub::Fq,
-    ser: S,
-) -> Result<S::Ok, S::Error> {
-    ser.serialize_str(&p.to_string())
-}
-
 /// Serialize a sequence of BabyJubJub Fq elements as an array of decimal strings.
 ///
 /// Each Fq element is serialized as a decimal string.
-pub fn serialize_babyjubjub_fq_sequence<S: Serializer>(
+pub fn serialize_fq_seq<S: Serializer>(
     ps: &[taceo_ark_babyjubjub::Fq],
     ser: S,
 ) -> Result<S::Ok, S::Error> {
@@ -94,56 +84,76 @@ pub fn serialize_babyjubjub_fq_sequence<S: Serializer>(
 ///
 /// The EdwardsAffine point is deserialized from `[x, y]` format. Validates that the
 /// point is on the curve and in the correct subgroup.
-pub fn deserialize_babyjubjub_affine<'de, D>(
+pub fn deserialize_affine<'de, D>(
     deserializer: D,
 ) -> Result<taceo_ark_babyjubjub::EdwardsAffine, D::Error>
 where
     D: de::Deserializer<'de>,
 {
-    deserializer.deserialize_seq(BabyJubJubAffineVisitor)
+    deserializer.deserialize_seq(BabyJubJubAffineVisitor(CheckElement::Yes))
+}
+
+pub fn deserialize_affine_unchecked<'de, D>(
+    deserializer: D,
+) -> Result<taceo_ark_babyjubjub::EdwardsAffine, D::Error>
+where
+    D: de::Deserializer<'de>,
+{
+    deserializer.deserialize_seq(BabyJubJubAffineVisitor(CheckElement::No))
 }
 
 /// Deserialize a sequence of BabyJubJub affine points from an array of coordinate pair arrays.
 ///
 /// Each EdwardsAffine point is deserialized from `[x, y]` format. Validates that all points
 /// are on the curve and in the correct subgroup.
-pub fn deserialize_babyjubjub_affine_sequence<'de, D>(
+pub fn deserialize_affine_seq<'de, D>(
     deserializer: D,
 ) -> Result<Vec<taceo_ark_babyjubjub::EdwardsAffine>, D::Error>
 where
     D: de::Deserializer<'de>,
 {
-    deserializer.deserialize_seq(BabyJubJubAffineSeqVisitor { size: None })
+    deserializer.deserialize_seq(BabyJubJubAffineSeqVisitor {
+        size: None,
+        check: CheckElement::Yes,
+    })
+}
+
+pub fn deserialize_affine_seq_unchecked<'de, D>(
+    deserializer: D,
+) -> Result<Vec<taceo_ark_babyjubjub::EdwardsAffine>, D::Error>
+where
+    D: de::Deserializer<'de>,
+{
+    deserializer.deserialize_seq(BabyJubJubAffineSeqVisitor {
+        size: None,
+        check: CheckElement::No,
+    })
 }
 
 /// Deserialize a BabyJubJub Fr (scalar field) element from a decimal string.
 ///
 /// The Fr field element is deserialized from its decimal string representation.
-pub fn deserialize_babyjubjub_fr<'de, D>(
-    deserializer: D,
-) -> Result<taceo_ark_babyjubjub::Fr, D::Error>
+pub fn deserialize_fr<'de, D>(deserializer: D) -> Result<taceo_ark_babyjubjub::Fr, D::Error>
 where
     D: de::Deserializer<'de>,
 {
-    deserializer.deserialize_str(BabyJubJubFrVisitor)
+    super::deserialize_f(deserializer)
 }
 
 /// Deserialize a BabyJubJub Fq (base field) element from a decimal string.
 ///
 /// The Fq field element is deserialized from its decimal string representation.
-pub fn deserialize_babyjubjub_fq<'de, D>(
-    deserializer: D,
-) -> Result<taceo_ark_babyjubjub::Fq, D::Error>
+pub fn deserialize_fq<'de, D>(deserializer: D) -> Result<taceo_ark_babyjubjub::Fq, D::Error>
 where
     D: de::Deserializer<'de>,
 {
-    deserializer.deserialize_str(BabyJubJubFqVisitor)
+    super::deserialize_f(deserializer)
 }
 
 /// Deserialize a sequence of BabyJubJub Fq elements from an array of decimal strings.
 ///
 /// Each Fq element is deserialized from its decimal string representation.
-pub fn deserialize_babyjubjub_fq_sequence<'de, D>(
+pub fn deserialize_fq_seq<'de, D>(
     deserializer: D,
 ) -> Result<Vec<taceo_ark_babyjubjub::Fq>, D::Error>
 where
@@ -152,9 +162,10 @@ where
     deserializer.deserialize_seq(BabyJubJubFqSeqVisitor)
 }
 
-fn babyjubjub_affine_from_strings(
+fn affine_from_strings(
     x: &str,
     y: &str,
+    check: CheckElement,
 ) -> Result<taceo_ark_babyjubjub::EdwardsAffine, SerdeCompatError> {
     let x = taceo_ark_babyjubjub::Fq::from_str(x).map_err(|_| SerdeCompatError)?;
     let y = taceo_ark_babyjubjub::Fq::from_str(y).map_err(|_| SerdeCompatError)?;
@@ -162,16 +173,22 @@ fn babyjubjub_affine_from_strings(
     if p.is_zero() {
         return Ok(p);
     }
-    if !p.is_on_curve() {
+    let curve_checks = matches!(check, CheckElement::Yes);
+    if curve_checks && !p.is_on_curve() {
         return Err(SerdeCompatError);
     }
-    if !p.is_in_correct_subgroup_assuming_on_curve() {
+    if curve_checks && !p.is_in_correct_subgroup_assuming_on_curve() {
         return Err(SerdeCompatError);
     }
     Ok(p)
 }
 
-struct BabyJubJubAffineVisitor;
+struct BabyJubJubFqSeqVisitor;
+struct BabyJubJubAffineVisitor(CheckElement);
+struct BabyJubJubAffineSeqVisitor {
+    size: Option<usize>,
+    check: CheckElement,
+}
 
 impl<'de> de::Visitor<'de> for BabyJubJubAffineVisitor {
     type Value = taceo_ark_babyjubjub::EdwardsAffine;
@@ -194,47 +211,11 @@ impl<'de> de::Visitor<'de> for BabyJubJubAffineVisitor {
         if seq.next_element::<String>()?.is_some() {
             Err(de::Error::invalid_length(3, &self))
         } else {
-            babyjubjub_affine_from_strings(&x, &y)
+            affine_from_strings(&x, &y, self.0)
                 .map_err(|_| de::Error::custom("Invalid affine point on babyjubjub.".to_owned()))
         }
     }
 }
-
-struct BabyJubJubFrVisitor;
-
-impl<'de> de::Visitor<'de> for BabyJubJubFrVisitor {
-    type Value = taceo_ark_babyjubjub::Fr;
-
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        formatter.write_str("a sting representing a babyjubjub Fr element")
-    }
-
-    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-    where
-        E: de::Error,
-    {
-        taceo_ark_babyjubjub::Fr::from_str(v).map_err(|_| E::custom("Invalid data"))
-    }
-}
-
-struct BabyJubJubFqVisitor;
-
-impl<'de> de::Visitor<'de> for BabyJubJubFqVisitor {
-    type Value = taceo_ark_babyjubjub::Fq;
-
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        formatter.write_str("a sting representing a babyjubjub Fq point")
-    }
-
-    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-    where
-        E: de::Error,
-    {
-        taceo_ark_babyjubjub::Fq::from_str(v).map_err(|_| E::custom("Invalid data"))
-    }
-}
-
-struct BabyJubJubFqSeqVisitor;
 
 impl<'de> de::Visitor<'de> for BabyJubJubFqSeqVisitor {
     type Value = Vec<taceo_ark_babyjubjub::Fq>;
@@ -256,10 +237,6 @@ impl<'de> de::Visitor<'de> for BabyJubJubFqSeqVisitor {
         }
         Ok(values)
     }
-}
-
-struct BabyJubJubAffineSeqVisitor {
-    size: Option<usize>,
 }
 
 impl<'de> de::Visitor<'de> for BabyJubJubAffineSeqVisitor {
@@ -288,7 +265,7 @@ impl<'de> de::Visitor<'de> for BabyJubJubAffineSeqVisitor {
                 return Err(de::Error::invalid_length(point.len(), &self));
             } else {
                 values.push(
-                    babyjubjub_affine_from_strings(&point[0], &point[1]).map_err(|_| {
+                    affine_from_strings(&point[0], &point[1], self.check).map_err(|_| {
                         de::Error::custom("Invalid affine point on babyjubjub.".to_owned())
                     })?,
                 );
