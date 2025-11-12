@@ -1,3 +1,7 @@
+[private]
+default:
+    @just --justfile {{justfile()}} --list --list-heading $'Project commands:\n'
+
 lint:
     cargo fmt --all -- --check
     cargo all-features clippy --workspace --tests --examples --benches --bins -q -- -D warnings
