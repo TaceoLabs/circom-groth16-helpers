@@ -34,7 +34,13 @@ pub use binfile::ZKeyParserError;
 
 pub use taceo_ark_serde_compat::CheckElement;
 
-//mod bn254;
+// re-export ark_bn254
+#[cfg(feature = "bn254")]
+pub use ark_bn254;
+
+// re-export ark_bls12_381
+#[cfg(feature = "bls12-381")]
+pub use ark_bls12_381;
 
 #[cfg(any(feature = "r1cs", feature = "witness"))]
 pub(crate) mod reader_utils {
