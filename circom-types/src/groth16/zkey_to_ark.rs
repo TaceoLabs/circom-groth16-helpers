@@ -1,9 +1,44 @@
+use ark_ec::pairing::Pairing;
 use ark_ff::PrimeField;
+use ark_groth16::{ProvingKey, VerifyingKey};
 use ark_relations::r1cs::ConstraintMatrices;
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, Valid};
 
-/// A helper to enable [ConstraintMatrices] to be able to be serialized using [ark-serialize].
+use crate::groth16::ZKey;
+
+/// Wrapper type to serialize [`ConstraintMatrices`] and [`ProvingKey`]s as a combined type.
+///
+/// Provides `From` implementations to convert to a [`ZKey`] or the inner types.
+#[derive(Clone, CanonicalSerialize, CanonicalDeserialize)]
+pub struct ArkZkey<P: Pairing> {
+    /// The [`ConstraintMatricesWrapper`] to be able to use `ark-serialize`.
+    pub matrices: ConstraintMatricesWrapper<P::ScalarField>,
+    /// The [`ProvingKey`]
+    pub pk: ProvingKey<P>,
+}
+
+/// A helper to enable [`ConstraintMatrices`] to be able to be serialized using `ark-serialize`.
+#[derive(Clone)]
 pub struct ConstraintMatricesWrapper<F: PrimeField>(pub ConstraintMatrices<F>);
+
+impl<P: Pairing> ArkZkey<P> {
+    /// Consumes the wrapper type and returns the underlying `ConstraintMatrices` and `ProvingKey`.
+    pub fn into_inner(self) -> (ConstraintMatrices<P::ScalarField>, ProvingKey<P>) {
+        self.into()
+    }
+
+    /// Gets references to the underlying `ConstraintMatrices` and `ProvingKey`.
+    pub fn as_inner(&self) -> (&ConstraintMatrices<P::ScalarField>, &ProvingKey<P>) {
+        (&self.matrices.0, &self.pk)
+    }
+}
+
+impl<F: PrimeField> ConstraintMatricesWrapper<F> {
+    /// Consumes the wrapper type and returns the underlying `ConstraintMatrices`.
+    pub fn into_inner(self) -> ConstraintMatrices<F> {
+        self.into()
+    }
+}
 
 impl<F: PrimeField> CanonicalSerialize for ConstraintMatricesWrapper<F> {
     fn serialize_with_mode<W: std::io::Write>(
@@ -96,5 +131,95 @@ impl<F: PrimeField> CanonicalDeserialize for ConstraintMatricesWrapper<F> {
             num_witness_variables,
             num_constraints,
         }))
+    }
+}
+
+impl<F: PrimeField> From<ConstraintMatrices<F>> for ConstraintMatricesWrapper<F> {
+    fn from(value: ConstraintMatrices<F>) -> Self {
+        Self(value)
+    }
+}
+
+impl<F: PrimeField> From<ConstraintMatricesWrapper<F>> for ConstraintMatrices<F> {
+    fn from(value: ConstraintMatricesWrapper<F>) -> Self {
+        value.0
+    }
+}
+
+impl<P: Pairing> From<ArkZkey<P>> for (ConstraintMatrices<P::ScalarField>, ProvingKey<P>) {
+    fn from(value: ArkZkey<P>) -> Self {
+        (value.matrices.into(), value.pk)
+    }
+}
+
+impl<P: Pairing> From<ZKey<P>> for (ConstraintMatrices<P::ScalarField>, ProvingKey<P>) {
+    fn from(zkey: ZKey<P>) -> Self {
+        (
+            ConstraintMatrices {
+                num_instance_variables: zkey.n_public + 1,
+                num_witness_variables: zkey.a_query.len() - zkey.n_public - 1,
+                num_constraints: zkey.num_constraints,
+                a_num_non_zero: zkey.a_matrix.len(),
+                b_num_non_zero: zkey.b_matrix.len(),
+                c_num_non_zero: 0,
+                a: zkey.a_matrix,
+                b: zkey.b_matrix,
+                c: vec![],
+            },
+            ProvingKey {
+                vk: VerifyingKey {
+                    alpha_g1: zkey.alpha_g1,
+                    beta_g2: zkey.beta_g2,
+                    gamma_g2: zkey.gamma_g2,
+                    delta_g2: zkey.delta_g2,
+                    gamma_abc_g1: zkey.ic,
+                },
+                beta_g1: zkey.beta_g1,
+                delta_g1: zkey.delta_g1,
+                a_query: zkey.a_query,
+                b_g1_query: zkey.b_g1_query,
+                b_g2_query: zkey.b_g2_query,
+                h_query: zkey.h_query,
+                l_query: zkey.l_query,
+            },
+        )
+    }
+}
+
+impl<P: Pairing> From<ZKey<P>> for ArkZkey<P> {
+    fn from(zkey: ZKey<P>) -> Self {
+        let (matrices, pk) = (
+            ConstraintMatrices {
+                num_instance_variables: zkey.n_public + 1,
+                num_witness_variables: zkey.a_query.len() - zkey.n_public - 1,
+                num_constraints: zkey.num_constraints,
+                a_num_non_zero: zkey.a_matrix.len(),
+                b_num_non_zero: zkey.b_matrix.len(),
+                c_num_non_zero: 0,
+                a: zkey.a_matrix,
+                b: zkey.b_matrix,
+                c: vec![],
+            },
+            ProvingKey {
+                vk: VerifyingKey {
+                    alpha_g1: zkey.alpha_g1,
+                    beta_g2: zkey.beta_g2,
+                    gamma_g2: zkey.gamma_g2,
+                    delta_g2: zkey.delta_g2,
+                    gamma_abc_g1: zkey.ic,
+                },
+                beta_g1: zkey.beta_g1,
+                delta_g1: zkey.delta_g1,
+                a_query: zkey.a_query,
+                b_g1_query: zkey.b_g1_query,
+                b_g2_query: zkey.b_g2_query,
+                h_query: zkey.h_query,
+                l_query: zkey.l_query,
+            },
+        );
+        Self {
+            matrices: matrices.into(),
+            pk,
+        }
     }
 }

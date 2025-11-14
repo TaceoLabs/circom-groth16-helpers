@@ -6,7 +6,7 @@ use std::{
 
 use ark_bn254::Bn254;
 use ark_serialize::CanonicalSerialize;
-use circom_types::groth16::ConstraintMatricesWrapper;
+use circom_types::groth16::ArkZkey;
 use circom_types::{CheckElement, groth16::ZKey};
 use clap::Parser;
 
@@ -45,6 +45,10 @@ pub struct ZKeyConvertConfig {
     #[clap(long, env = "PROVING_KEY_PATH", default_value = "pk.bin")]
     pub pk_path: PathBuf,
 
+    /// Path to the ark-zkey file.
+    #[clap(long, env = "ARKS_ZKEY_PATH", default_value = "arks.zkey")]
+    pub arks_zkey_path: PathBuf,
+
     /// Use uncompressed serialization
     #[clap(long, env = "UNCOMPRESSED")]
     pub uncompressed: bool,
@@ -59,28 +63,30 @@ fn main() -> eyre::Result<()> {
         CheckElement::No,
     )?;
     tracing::info!("Loaded zkey");
-    let (matrices, pk) = zkey.into();
+    let ark_zkey = ArkZkey::from(zkey);
     tracing::info!("Converted zkey");
+    let compress = if config.uncompressed {
+        ark_serialize::Compress::No
+    } else {
+        ark_serialize::Compress::Yes
+    };
 
-    ConstraintMatricesWrapper(matrices).serialize_with_mode(
+    ark_zkey.matrices.serialize_with_mode(
         BufWriter::new(File::create(&config.matrices_path)?),
-        if config.uncompressed {
-            ark_serialize::Compress::No
-        } else {
-            ark_serialize::Compress::Yes
-        },
+        compress,
     )?;
     tracing::info!("Serialized matrices to {}", config.matrices_path.display());
 
-    pk.serialize_with_mode(
-        File::create(&config.pk_path)?,
-        if config.uncompressed {
-            ark_serialize::Compress::No
-        } else {
-            ark_serialize::Compress::Yes
-        },
-    )?;
+    ark_zkey
+        .pk
+        .serialize_with_mode(File::create(&config.pk_path)?, compress)?;
     tracing::info!("Serialized proving key to {}", config.pk_path.display());
+
+    ark_zkey.serialize_with_mode(File::create(&config.arks_zkey_path)?, compress)?;
+    tracing::info!(
+        "Serialized arks-zkey to {}",
+        config.arks_zkey_path.display()
+    );
 
     Ok(())
 }

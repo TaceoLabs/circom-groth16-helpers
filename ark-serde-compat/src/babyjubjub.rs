@@ -19,20 +19,14 @@ use crate::SerdeCompatError;
 /// Serialize a BabyJubJub Fr (scalar field) element as a decimal string.
 ///
 /// The Fr field element is serialized to its decimal string representation.
-pub fn serialize_fr<S: Serializer>(
-    f: &taceo_ark_babyjubjub::Fr,
-    ser: S,
-) -> Result<S::Ok, S::Error> {
+pub fn serialize_fr<S: Serializer>(f: &ark_babyjubjub::Fr, ser: S) -> Result<S::Ok, S::Error> {
     super::serialize_f(f, ser)
 }
 
 /// Serialize a BabyJubJub Fq (base field) element as a decimal string.
 ///
 /// The Fq field element is serialized to its decimal string representation.
-pub fn serialize_fq<S: Serializer>(
-    f: &taceo_ark_babyjubjub::Fq,
-    ser: S,
-) -> Result<S::Ok, S::Error> {
+pub fn serialize_fq<S: Serializer>(f: &ark_babyjubjub::Fq, ser: S) -> Result<S::Ok, S::Error> {
     super::serialize_f(f, ser)
 }
 
@@ -40,7 +34,7 @@ pub fn serialize_fq<S: Serializer>(
 ///
 /// Each Fq element is serialized as a decimal string.
 pub fn serialize_fq_seq<S: Serializer>(
-    ps: &[taceo_ark_babyjubjub::Fq],
+    ps: &[ark_babyjubjub::Fq],
     ser: S,
 ) -> Result<S::Ok, S::Error> {
     super::serialize_f_seq(ps, ser)
@@ -51,7 +45,7 @@ pub fn serialize_fq_seq<S: Serializer>(
 /// The EdwardsAffine point is serialized as `[x, y]` where each coordinate
 /// is a decimal string representing an Fq element.
 pub fn serialize_affine<S: Serializer>(
-    p: &taceo_ark_babyjubjub::EdwardsAffine,
+    p: &ark_babyjubjub::EdwardsAffine,
     ser: S,
 ) -> Result<S::Ok, S::Error> {
     let (x, y) = (p.x, p.y);
@@ -65,7 +59,7 @@ pub fn serialize_affine<S: Serializer>(
 ///
 /// Each EdwardsAffine point is serialized as `[x, y]` where each coordinate is a decimal string.
 pub fn serialize_affine_seq<S: Serializer>(
-    ps: &[taceo_ark_babyjubjub::EdwardsAffine],
+    ps: &[ark_babyjubjub::EdwardsAffine],
     ser: S,
 ) -> Result<S::Ok, S::Error> {
     let mut seq = ser.serialize_seq(Some(ps.len()))?;
@@ -79,7 +73,7 @@ pub fn serialize_affine_seq<S: Serializer>(
 /// Deserialize a BabyJubJub Fr (scalar field) element from a decimal string.
 ///
 /// The Fr field element is deserialized from its decimal string representation.
-pub fn deserialize_fr<'de, D>(deserializer: D) -> Result<taceo_ark_babyjubjub::Fr, D::Error>
+pub fn deserialize_fr<'de, D>(deserializer: D) -> Result<ark_babyjubjub::Fr, D::Error>
 where
     D: de::Deserializer<'de>,
 {
@@ -89,7 +83,7 @@ where
 /// Deserialize a BabyJubJub Fq (base field) element from a decimal string.
 ///
 /// The Fq field element is deserialized from its decimal string representation.
-pub fn deserialize_fq<'de, D>(deserializer: D) -> Result<taceo_ark_babyjubjub::Fq, D::Error>
+pub fn deserialize_fq<'de, D>(deserializer: D) -> Result<ark_babyjubjub::Fq, D::Error>
 where
     D: de::Deserializer<'de>,
 {
@@ -99,9 +93,7 @@ where
 /// Deserialize a sequence of BabyJubJub Fq elements from an array of decimal strings.
 ///
 /// Each Fq element is deserialized from its decimal string representation.
-pub fn deserialize_fq_seq<'de, D>(
-    deserializer: D,
-) -> Result<Vec<taceo_ark_babyjubjub::Fq>, D::Error>
+pub fn deserialize_fq_seq<'de, D>(deserializer: D) -> Result<Vec<ark_babyjubjub::Fq>, D::Error>
 where
     D: de::Deserializer<'de>,
 {
@@ -114,7 +106,7 @@ where
 /// point is on the curve and in the correct subgroup.
 pub fn deserialize_affine<'de, D>(
     deserializer: D,
-) -> Result<taceo_ark_babyjubjub::EdwardsAffine, D::Error>
+) -> Result<ark_babyjubjub::EdwardsAffine, D::Error>
 where
     D: de::Deserializer<'de>,
 {
@@ -128,7 +120,7 @@ where
 /// unsafe. Use only with trusted input.
 pub fn deserialize_affine_unchecked<'de, D>(
     deserializer: D,
-) -> Result<taceo_ark_babyjubjub::EdwardsAffine, D::Error>
+) -> Result<ark_babyjubjub::EdwardsAffine, D::Error>
 where
     D: de::Deserializer<'de>,
 {
@@ -141,7 +133,7 @@ where
 /// are on the curve and in the correct subgroup.
 pub fn deserialize_affine_seq<'de, D>(
     deserializer: D,
-) -> Result<Vec<taceo_ark_babyjubjub::EdwardsAffine>, D::Error>
+) -> Result<Vec<ark_babyjubjub::EdwardsAffine>, D::Error>
 where
     D: de::Deserializer<'de>,
 {
@@ -155,7 +147,7 @@ where
 /// unsafe. Use only with trusted input.
 pub fn deserialize_affine_seq_unchecked<'de, D>(
     deserializer: D,
-) -> Result<Vec<taceo_ark_babyjubjub::EdwardsAffine>, D::Error>
+) -> Result<Vec<ark_babyjubjub::EdwardsAffine>, D::Error>
 where
     D: de::Deserializer<'de>,
 {
@@ -169,7 +161,7 @@ where
 /// can be deserialized.
 pub fn deserialize_affine_array<'de, const LENGTH: usize, D>(
     deserializer: D,
-) -> Result<[taceo_ark_babyjubjub::EdwardsAffine; LENGTH], D::Error>
+) -> Result<[ark_babyjubjub::EdwardsAffine; LENGTH], D::Error>
 where
     D: de::Deserializer<'de>,
 {
@@ -187,7 +179,7 @@ where
 /// can be deserialized.
 pub fn deserialize_affine_array_unchecked<'de, const LENGTH: usize, D>(
     deserializer: D,
-) -> Result<[taceo_ark_babyjubjub::EdwardsAffine; LENGTH], D::Error>
+) -> Result<[ark_babyjubjub::EdwardsAffine; LENGTH], D::Error>
 where
     D: de::Deserializer<'de>,
 {
@@ -200,10 +192,10 @@ where
 fn affine_from_strings<const CHECK: bool>(
     x: &str,
     y: &str,
-) -> Result<taceo_ark_babyjubjub::EdwardsAffine, SerdeCompatError> {
-    let x = taceo_ark_babyjubjub::Fq::from_str(x).map_err(|_| SerdeCompatError)?;
-    let y = taceo_ark_babyjubjub::Fq::from_str(y).map_err(|_| SerdeCompatError)?;
-    let p = taceo_ark_babyjubjub::EdwardsAffine::new_unchecked(x, y);
+) -> Result<ark_babyjubjub::EdwardsAffine, SerdeCompatError> {
+    let x = ark_babyjubjub::Fq::from_str(x).map_err(|_| SerdeCompatError)?;
+    let y = ark_babyjubjub::Fq::from_str(y).map_err(|_| SerdeCompatError)?;
+    let p = ark_babyjubjub::EdwardsAffine::new_unchecked(x, y);
     if p.is_zero() {
         return Ok(p);
     }
@@ -225,7 +217,7 @@ struct BabyJubJubAffineSeqVisitor<const CHECK: bool> {
 }
 
 impl<'de, const CHECK: bool> de::Visitor<'de> for BabyJubJubAffineVisitor<CHECK> {
-    type Value = taceo_ark_babyjubjub::EdwardsAffine;
+    type Value = ark_babyjubjub::EdwardsAffine;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
         formatter.write_str("a sequence of 2 strings, representing a affine babyjubjub point")
@@ -252,7 +244,7 @@ impl<'de, const CHECK: bool> de::Visitor<'de> for BabyJubJubAffineVisitor<CHECK>
 }
 
 impl<'de> de::Visitor<'de> for BabyJubJubFqSeqVisitor {
-    type Value = Vec<taceo_ark_babyjubjub::Fq>;
+    type Value = Vec<ark_babyjubjub::Fq>;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
         formatter.write_str("a sequence of elements representing babyjubjub Fq points.")
@@ -265,8 +257,7 @@ impl<'de> de::Visitor<'de> for BabyJubJubFqSeqVisitor {
         let mut values = vec![];
         while let Some(v) = seq.next_element::<String>()? {
             values.push(
-                taceo_ark_babyjubjub::Fq::from_str(&v)
-                    .map_err(|_| de::Error::custom("Invalid data"))?,
+                ark_babyjubjub::Fq::from_str(&v).map_err(|_| de::Error::custom("Invalid data"))?,
             );
         }
         Ok(values)
@@ -274,7 +265,7 @@ impl<'de> de::Visitor<'de> for BabyJubJubFqSeqVisitor {
 }
 
 impl<'de, const CHECK: bool> de::Visitor<'de> for BabyJubJubAffineSeqVisitor<CHECK> {
-    type Value = Vec<taceo_ark_babyjubjub::EdwardsAffine>;
+    type Value = Vec<ark_babyjubjub::EdwardsAffine>;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
         if let Some(size) = self.size {

@@ -28,8 +28,7 @@
 //! Inspired by <https://github.com/arkworks-rs/circom-compat/blob/170b10fc9ed182b5f72ecf379033dda023d0bf07/src/zkey.rs>
 use ark_ec::pairing::Pairing;
 use ark_ff::PrimeField;
-use ark_groth16::{ProvingKey, VerifyingKey};
-use ark_relations::r1cs::{ConstraintMatrices, Matrix};
+use ark_relations::r1cs::Matrix;
 use ark_serialize::CanonicalDeserialize;
 
 use std::io::Read;
@@ -87,41 +86,6 @@ pub struct ZKey<P: Pairing> {
 
 /// A constraint matrix used in Groth16.
 type ConstraintMatrixAB<F> = (usize, Matrix<F>, Matrix<F>);
-
-/// Note: The returned ProvingKey is only suitable for proving, the included VerificationKey is not complete due to elements missing in the zkey.
-impl<P: Pairing> From<ZKey<P>> for (ConstraintMatrices<P::ScalarField>, ProvingKey<P>) {
-    fn from(zkey: ZKey<P>) -> Self {
-        (
-            ConstraintMatrices {
-                num_instance_variables: zkey.n_public + 1,
-                num_witness_variables: zkey.a_query.len() - zkey.n_public - 1,
-                num_constraints: zkey.num_constraints,
-                a_num_non_zero: zkey.a_matrix.len(),
-                b_num_non_zero: zkey.b_matrix.len(),
-                c_num_non_zero: 0,
-                a: zkey.a_matrix,
-                b: zkey.b_matrix,
-                c: vec![],
-            },
-            ProvingKey {
-                vk: VerifyingKey {
-                    alpha_g1: zkey.alpha_g1,
-                    beta_g2: zkey.beta_g2,
-                    gamma_g2: zkey.gamma_g2,
-                    delta_g2: zkey.delta_g2,
-                    gamma_abc_g1: zkey.ic,
-                },
-                beta_g1: zkey.beta_g1,
-                delta_g1: zkey.delta_g1,
-                a_query: zkey.a_query,
-                b_g1_query: zkey.b_g1_query,
-                b_g2_query: zkey.b_g2_query,
-                h_query: zkey.h_query,
-                l_query: zkey.l_query,
-            },
-        )
-    }
-}
 
 #[derive(Clone, Debug)]
 struct HeaderGroth<P: Pairing> {

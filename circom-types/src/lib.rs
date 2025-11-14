@@ -1,6 +1,4 @@
 #![warn(missing_docs)]
-//! # circom-types
-//!
 //! Types and utilities for reading circom-generated files into arkworks representations.
 //!
 //! This crate provides deserialization support for circom's binary and JSON formats,

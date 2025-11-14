@@ -19,4 +19,4 @@ pub use verification_key::VerificationKey;
 #[cfg(feature = "zkey")]
 pub use zkey::ZKey;
 #[cfg(feature = "zkey")]
-pub use zkey_to_ark::ConstraintMatricesWrapper;
+pub use zkey_to_ark::{ArkZkey, ConstraintMatricesWrapper};

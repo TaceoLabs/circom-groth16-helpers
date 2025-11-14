@@ -1,7 +1,8 @@
 [workspace]
 members = [
+    "ark-serde-compat",
     "circom-types",
-    "ark-serde-compat"
+    "groth16-material"
 ]
 resolver = "3"
 
@@ -13,28 +14,37 @@ repository = "https://github.com/TaceoLabs/circom-helpers"
 license = "MIT OR Apache-2.0"
 
 [workspace.dependencies]
-taceo-ark-babyjubjub = { version = "0.5", default-features = false }
+ark-babyjubjub = { package="taceo-ark-babyjubjub", version = "0.5" }
 ark-bls12-381 = "0.5"
 ark-bn254 = { version = "0.5" }
 ark-ec = { version = "0.5", default-features = false }
 ark-ff = { version = "0.5", default-features = false }
-ark-groth16 = "0.5"
-ark-poly = "0.5"
-ark-relations = "0.5"
-ark-serialize = "0.5"
+ark-groth16 = { version = "0.5", deafult-features = false }
+ark-poly = { version = "0.5", deafult-features = false }
+ark-relations = { version = "0.5", default-features = false }
+ark-serialize = { version = "0.5", default-features = false }
 ark-std = "0.5"
 byteorder = "1.5"
+circom-types = { path = "circom-types" }
+circom-witness-rs = { version = "0.2.1" }
 clap = { version = "4.4.8", features = ["derive"] }
 eyre = "0.6"
+groth16 = { git = "https://github.com/TaceoLabs/groth16.git" }
+hex = "0.4"
 num-bigint = "0.4"
 num-traits = "0.2"
+rand = "0.8"
 rayon = "1.8"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
+ruint = "1.17"
 serde = { version = "1.0" }
 serde_json = "1"
-taceo-ark-serde-compat = { version = "0.2", path = "ark-serde-compat" }
+sha2 = "0.10"
+taceo-ark-serde-compat = { version = "0.2", path = "ark-serde-compat",default-features = false }
 thiserror = "2"
 tracing = "0.1"
 tracing-subscriber = "0.3"
+
 
 [profile.profiling]
 inherits = "bench"
