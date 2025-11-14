@@ -6,12 +6,8 @@ use ark_ff::AdditiveGroup as _;
 use ark_ff::Field as _;
 use ark_ff::LegendreSymbol;
 use ark_ff::UniformRand as _;
-use ark_groth16::Proof;
 use ark_serialize::CanonicalDeserialize;
-use ark_serialize::Compress;
-use ark_serialize::Validate;
-use circom_types::groth16::ArkZkey;
-use circom_witness_rs::{BlackBoxFunction, Graph};
+use circom_witness_rs::Graph;
 use groth16::CircomReduction;
 use groth16::Groth16;
 use rand::{CryptoRng, Rng};
@@ -22,6 +18,12 @@ use std::sync::Arc;
 use std::{collections::HashMap, path::Path};
 
 use crate::{Groth16Error, circom::proof_input::ProofInput};
+
+pub use ark_groth16::Proof;
+pub use ark_serialize::Compress;
+pub use ark_serialize::Validate;
+pub use circom_types::groth16::ArkZkey;
+pub use circom_witness_rs::BlackBoxFunction;
 
 pub mod proof_input;
 
