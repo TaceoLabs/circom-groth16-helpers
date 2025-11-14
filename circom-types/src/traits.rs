@@ -230,7 +230,7 @@ pub trait CircomArkworksPairingBridge: Pairing + CanonicalJsonSerialize {
     /// Deserializes an element of [`Pairing::ScalarField`] where the element is already in montgomery form (no montgomery reduction performed).
     fn fr_from_montgomery_reader(reader: impl Read) -> SerResult<Self::ScalarField>;
 
-    /// Deserializes an element of [`Pairing::ScalarField`] where the element is already in montgomery form BUT we still need to perform a montgomery reduction. This is necessary for the deserialization of circom's ZKey.
+    /// Deserializes an element of [`Pairing::ScalarField`] where the element is already in montgomery form BUT we still need to perform a montgomery reduction. This is necessary for the deserialization of circom's Zkey.
     fn fr_from_reader_for_groth16_zkey(reader: impl Read) -> SerResult<Self::ScalarField>;
 
     /// Deserializes an element of [`Pairing::BaseField`] where the element is already in montgomery form (no montgomery reduction performed).

@@ -24,7 +24,7 @@
 //IN CONNECTION WITH THE SOFTWARE O THE USE OR OTHER
 //DEALINGS IN THE SOFTWARE.R
 
-//! This module defines the [`ZKey`] struct that implements deserialization of circom zkey files via [`ZKey::from_reader`].
+//! This module defines the [`Zkey`] struct that implements deserialization of circom zkey files via [`Zkey::from_reader`].
 //! Inspired by <https://github.com/arkworks-rs/circom-compat/blob/170b10fc9ed182b5f72ecf379033dda023d0bf07/src/zkey.rs>
 use ark_ec::pairing::Pairing;
 use ark_ff::PrimeField;
@@ -34,7 +34,7 @@ use ark_serialize::CanonicalDeserialize;
 use std::io::Read;
 
 use crate::{
-    binfile::{BinFile, ZKeyParserError, ZKeyParserResult},
+    binfile::{BinFile, ZkeyParserError, ZkeyParserResult},
     traits::CircomArkworksPairingBridge,
 };
 
@@ -45,9 +45,9 @@ macro_rules! u32_to_usize {
         usize::try_from($x).expect("u32 fits into usize")
     };
 }
-/// Represents a zkey in the format defined by circom. Implements [`ZKey::from_reader`] to deserialize a zkey from a reader.
+/// Represents a zkey in the format defined by circom. Implements [`Zkey::from_reader`] to deserialize a zkey from a reader.
 #[derive(Clone)]
-pub struct ZKey<P: Pairing> {
+pub struct Zkey<P: Pairing> {
     /// amount of public inputs
     pub n_public: usize,
     /// domain size
@@ -101,8 +101,8 @@ struct HeaderGroth<P: Pairing> {
     delta_g2: P::G2Affine,
 }
 
-impl<P: Pairing + CircomArkworksPairingBridge> ZKey<P> {
-    /// Deserializes a [`ZKey`] from a reader.
+impl<P: Pairing + CircomArkworksPairingBridge> Zkey<P> {
+    /// Deserializes a [`Zkey`] from a reader.
     ///
     /// You may use the second parameter to specify whether
     /// the deserialization should check if the elements are on
@@ -113,7 +113,7 @@ impl<P: Pairing + CircomArkworksPairingBridge> ZKey<P> {
     /// only with care.
     ///
     /// See [`CheckElement`].
-    pub fn from_reader<R: Read>(mut reader: R, check: CheckElement) -> ZKeyParserResult<Self> {
+    pub fn from_reader<R: Read>(mut reader: R, check: CheckElement) -> ZkeyParserResult<Self> {
         let mut binfile = BinFile::<P>::new(&mut reader)?;
 
         tracing::debug!("start transforming bin file into zkey...");
@@ -159,7 +159,7 @@ impl<P: Pairing + CircomArkworksPairingBridge> ZKey<P> {
         let (num_constraints, a_matrix, b_matrix) = matrices.unwrap()?;
 
         tracing::debug!("groth16 zkey parsing done!");
-        Ok(ZKey {
+        Ok(Zkey {
             n_public: header.n_public,
             pow: u32_to_usize!(header.pow),
             num_constraints,
@@ -185,7 +185,7 @@ impl<P: Pairing + CircomArkworksPairingBridge> ZKey<P> {
         n_vars: usize,
         reader: R,
         check: CheckElement,
-    ) -> ZKeyParserResult<Vec<P::G1Affine>> {
+    ) -> ZkeyParserResult<Vec<P::G1Affine>> {
         Ok(P::g1_vec_from_reader(reader, n_vars, check)?)
     }
 
@@ -193,7 +193,7 @@ impl<P: Pairing + CircomArkworksPairingBridge> ZKey<P> {
         n_vars: usize,
         reader: R,
         check: CheckElement,
-    ) -> ZKeyParserResult<Vec<P::G1Affine>> {
+    ) -> ZkeyParserResult<Vec<P::G1Affine>> {
         Ok(P::g1_vec_from_reader(reader, n_vars, check)?)
     }
 
@@ -201,7 +201,7 @@ impl<P: Pairing + CircomArkworksPairingBridge> ZKey<P> {
         n_vars: usize,
         reader: R,
         check: CheckElement,
-    ) -> ZKeyParserResult<Vec<P::G1Affine>> {
+    ) -> ZkeyParserResult<Vec<P::G1Affine>> {
         Ok(P::g1_vec_from_reader(reader, n_vars, check)?)
     }
 
@@ -209,7 +209,7 @@ impl<P: Pairing + CircomArkworksPairingBridge> ZKey<P> {
         n_vars: usize,
         reader: R,
         check: CheckElement,
-    ) -> ZKeyParserResult<Vec<P::G2Affine>> {
+    ) -> ZkeyParserResult<Vec<P::G2Affine>> {
         Ok(P::g2_vec_from_reader(reader, n_vars, check)?)
     }
 
@@ -217,7 +217,7 @@ impl<P: Pairing + CircomArkworksPairingBridge> ZKey<P> {
         n_vars: usize,
         reader: R,
         check: CheckElement,
-    ) -> ZKeyParserResult<Vec<P::G1Affine>> {
+    ) -> ZkeyParserResult<Vec<P::G1Affine>> {
         Ok(P::g1_vec_from_reader(reader, n_vars, check)?)
     }
 
@@ -225,7 +225,7 @@ impl<P: Pairing + CircomArkworksPairingBridge> ZKey<P> {
         n_vars: usize,
         reader: R,
         check: CheckElement,
-    ) -> ZKeyParserResult<Vec<P::G1Affine>> {
+    ) -> ZkeyParserResult<Vec<P::G1Affine>> {
         Ok(P::g1_vec_from_reader(reader, n_vars, check)?)
     }
 
@@ -233,7 +233,7 @@ impl<P: Pairing + CircomArkworksPairingBridge> ZKey<P> {
         domain_size: usize,
         n_public: usize,
         mut matrices_section: R,
-    ) -> ZKeyParserResult<ConstraintMatrixAB<P::ScalarField>> {
+    ) -> ZkeyParserResult<ConstraintMatrixAB<P::ScalarField>> {
         // this function (an all following uses) assumes that values are encoded in little-endian
         let num_coeffs = u32::deserialize_uncompressed(&mut matrices_section)?;
 
@@ -264,7 +264,7 @@ impl<P: Pairing + CircomArkworksPairingBridge> ZKey<P> {
 }
 
 impl<P: Pairing + CircomArkworksPairingBridge> HeaderGroth<P> {
-    fn read<R: Read>(mut reader: &mut R, check: CheckElement) -> ZKeyParserResult<Self> {
+    fn read<R: Read>(mut reader: &mut R, check: CheckElement) -> ZkeyParserResult<Self> {
         tracing::debug!("reading groth16 header..");
         let n8q: u32 = u32::deserialize_uncompressed(&mut reader)?;
         //modulus of BaseField
@@ -272,11 +272,11 @@ impl<P: Pairing + CircomArkworksPairingBridge> HeaderGroth<P> {
         tracing::debug!("base field byte size: {n8q}");
         let expected_n8q = P::BaseField::MODULUS_BIT_SIZE.div_ceil(8);
         if n8q != expected_n8q {
-            return Err(ZKeyParserError::UnexpectedByteSize(expected_n8q, n8q));
+            return Err(ZkeyParserError::UnexpectedByteSize(expected_n8q, n8q));
         }
         let modulus = <P::BaseField as PrimeField>::MODULUS;
         if q != modulus {
-            return Err(ZKeyParserError::InvalidPrimeInHeader);
+            return Err(ZkeyParserError::InvalidPrimeInHeader);
         }
         // this function assumes that the values are encoded in little-endian
         let n8r: u32 = u32::deserialize_uncompressed(&mut reader)?;
@@ -285,11 +285,11 @@ impl<P: Pairing + CircomArkworksPairingBridge> HeaderGroth<P> {
         let r = <P::ScalarField as PrimeField>::BigInt::deserialize_uncompressed(&mut reader)?;
         let expected_n8r = P::ScalarField::MODULUS_BIT_SIZE.div_ceil(8);
         if n8r != expected_n8r {
-            return Err(ZKeyParserError::UnexpectedByteSize(expected_n8r, n8r));
+            return Err(ZkeyParserError::UnexpectedByteSize(expected_n8r, n8r));
         }
         let modulus = <P::ScalarField as PrimeField>::MODULUS;
         if r != modulus {
-            return Err(ZKeyParserError::InvalidPrimeInHeader);
+            return Err(ZkeyParserError::InvalidPrimeInHeader);
         }
 
         let n_vars = u32_to_usize!(u32::deserialize_uncompressed(&mut reader)?);
@@ -317,7 +317,7 @@ impl<P: Pairing + CircomArkworksPairingBridge> HeaderGroth<P> {
                 gamma_g2,
             })
         } else {
-            Err(ZKeyParserError::CorruptedBinFile(format!(
+            Err(ZkeyParserError::CorruptedBinFile(format!(
                 "Invalid domain size {domain_size}. Must be power of 2"
             )))
         }
@@ -341,7 +341,7 @@ mod bls12_381_tests {
         let bls_kat = groth16_bls12_381_kats();
         for check in checks {
             let zkey = File::open(bls_kat.join("circuit.zkey")).unwrap();
-            let pk = ZKey::<Bls12_381>::from_reader(zkey, check).unwrap();
+            let pk = Zkey::<Bls12_381>::from_reader(zkey, check).unwrap();
             let beta_g1 = test_utils::to_g1_bls12_381!(
                 "3250926845764181697440489887589522470230793318088642572984668490087093900624850910545082127315229930931755140742241",
                 "316529275544082453038501392826432978288816226993296382968176983689596132256113795423119530534863639021511852843536"
@@ -462,7 +462,7 @@ mod bn254_tests {
         let groth16_bn254_kats = groth16_bn254_kats();
         for check in checks {
             let zkey = File::open(groth16_bn254_kats.join("circuit.zkey")).unwrap();
-            let pk = ZKey::<Bn254>::from_reader(zkey, check).unwrap();
+            let pk = Zkey::<Bn254>::from_reader(zkey, check).unwrap();
             let beta_g1 = test_utils::to_g1_bn254!(
                 "1436132865180440050058953936123839411531217265376140788508003974087015278078",
                 "11205704823000238875301065577649453768474753051476131547254697150385247310776"

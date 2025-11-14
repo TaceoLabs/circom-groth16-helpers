@@ -7,7 +7,7 @@ use std::{
 use ark_bn254::Bn254;
 use ark_serialize::CanonicalSerialize;
 use circom_types::groth16::ArkZkey;
-use circom_types::{CheckElement, groth16::ZKey};
+use circom_types::{CheckElement, groth16::Zkey};
 use clap::Parser;
 
 fn install_tracing() {
@@ -28,11 +28,11 @@ fn install_tracing() {
         .init();
 }
 
-/// The configuration for the ZKey Conversion functionality.
+/// The configuration for the Zkey Conversion functionality.
 ///
 /// It can be configured via environment variables or command line arguments using `clap`.
 #[derive(Parser, Debug)]
-pub struct ZKeyConvertConfig {
+pub struct ZkeyConvertConfig {
     /// Path to the zkey.
     #[clap(long, env = "ZKEY_PATH")]
     pub zkey_path: PathBuf,
@@ -56,9 +56,9 @@ pub struct ZKeyConvertConfig {
 
 fn main() -> eyre::Result<()> {
     install_tracing();
-    let config = ZKeyConvertConfig::parse();
+    let config = ZkeyConvertConfig::parse();
     tracing::info!("Converting zkey at {}", config.zkey_path.display());
-    let zkey = ZKey::<Bn254>::from_reader(
+    let zkey = Zkey::<Bn254>::from_reader(
         BufReader::new(File::open(config.zkey_path)?),
         CheckElement::No,
     )?;

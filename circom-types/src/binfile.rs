@@ -10,11 +10,11 @@ use thiserror::Error;
 
 use crate::traits::CircomArkworksPairingBridge;
 
-pub(crate) type ZKeyParserResult<T> = std::result::Result<T, ZKeyParserError>;
+pub(crate) type ZkeyParserResult<T> = std::result::Result<T, ZkeyParserError>;
 
 /// Error type describing errors during parsing zkey files
 #[derive(Debug, Error)]
-pub enum ZKeyParserError {
+pub enum ZkeyParserError {
     /// Error during serialization
     #[error(transparent)]
     SerializationError(#[from] SerializationError),
@@ -43,12 +43,12 @@ pub(crate) struct BinFile<P: Pairing + CircomArkworksPairingBridge> {
 }
 
 impl<P: Pairing + CircomArkworksPairingBridge> BinFile<P> {
-    pub(crate) fn new<R: Read>(reader: &mut R) -> ZKeyParserResult<Self> {
+    pub(crate) fn new<R: Read>(reader: &mut R) -> ZkeyParserResult<Self> {
         tracing::debug!("reading bin file");
         let mut magic = [0u8; 4];
         reader.read_exact(&mut magic)?;
         let ftype = std::str::from_utf8(&magic[..])
-            .map_err(|_| ZKeyParserError::CorruptedBinFile("cannot parse magic number".to_owned()))?
+            .map_err(|_| ZkeyParserError::CorruptedBinFile("cannot parse magic number".to_owned()))?
             .to_string();
         tracing::debug!("file type for binfile: \"{ftype}\"");
 
@@ -74,7 +74,7 @@ impl<P: Pairing + CircomArkworksPairingBridge> BinFile<P> {
 
             let section = &mut sections[section_id - 1];
             if !section.is_empty() {
-                return Err(ZKeyParserError::CorruptedBinFile(
+                return Err(ZkeyParserError::CorruptedBinFile(
                     "sections are empty!".to_owned(),
                 ));
             }

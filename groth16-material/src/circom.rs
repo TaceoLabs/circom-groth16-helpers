@@ -32,13 +32,13 @@ pub mod proof_input;
 pub enum ZkeyError {
     /// The SHA-256 fingerprint of the `.zkey` did not match the expected value.
     #[error("invalid zkey - wrong sha256 fingerprint: {0}")]
-    ZKeyFingerprintMismatch(String),
+    ZkeyFingerprintMismatch(String),
     /// The SHA-256 fingerprint of the witness graph did not match the expected value.
     #[error("invalid graph - wrong sha256 fingerprint: {0}")]
     GraphFingerprintMismatch(String),
     /// Could not parse the `.zkey` file.
     #[error("Could not parse zkey - see wrapped error")]
-    ZKeyInvalid(#[source] eyre::Report),
+    ZkeyInvalid(#[source] eyre::Report),
     /// Could not parse the graph file.
     #[error(transparent)]
     GraphInvalid(#[from] eyre::Report),
@@ -54,15 +54,15 @@ impl From<reqwest::Error> for ZkeyError {
     }
 }
 
-impl From<circom_types::ZKeyParserError> for ZkeyError {
-    fn from(value: circom_types::ZKeyParserError) -> Self {
-        Self::ZKeyInvalid(eyre::eyre!(value))
+impl From<circom_types::ZkeyParserError> for ZkeyError {
+    fn from(value: circom_types::ZkeyParserError) -> Self {
+        Self::ZkeyInvalid(eyre::eyre!(value))
     }
 }
 
 impl From<ark_serialize::SerializationError> for ZkeyError {
     fn from(value: ark_serialize::SerializationError) -> Self {
-        Self::ZKeyInvalid(eyre::eyre!(value))
+        Self::ZkeyInvalid(eyre::eyre!(value))
     }
 }
 
@@ -230,7 +230,7 @@ impl CircomGroth16MaterialBuilder {
     ///
     /// # Errors
     ///
-    /// Returns a [`ZkeyError::ZKeyFingerprintMismatch`] if any embedded fingerprint check fails.
+    /// Returns a [`ZkeyError::ZkeyFingerprintMismatch`] if any embedded fingerprint check fails.
     pub fn from_reader(
         self,
         mut zkey_reader: impl std::io::Read,
@@ -247,7 +247,7 @@ impl CircomGroth16MaterialBuilder {
     ///
     /// # Errors
     ///
-    /// Returns a [`ZkeyError::ZKeyFingerprintMismatch`] if any embedded fingerprint check fails.
+    /// Returns a [`ZkeyError::ZkeyFingerprintMismatch`] if any embedded fingerprint check fails.
     pub fn from_bytes(
         self,
         zkey_bytes: &[u8],
@@ -256,7 +256,7 @@ impl CircomGroth16MaterialBuilder {
         let validate = if let Some(should_fingerprint) = self.fingerprint_zkey {
             let is_fingerprint = hex::encode(sha2::Sha256::digest(zkey_bytes));
             if is_fingerprint != should_fingerprint {
-                return Err(ZkeyError::ZKeyFingerprintMismatch(is_fingerprint));
+                return Err(ZkeyError::ZkeyFingerprintMismatch(is_fingerprint));
             }
             Validate::No
         } else {
@@ -287,7 +287,7 @@ impl CircomGroth16MaterialBuilder {
     /// # Errors
     ///
     /// Returns a [`ZkeyError::IoError`] if fetching either URL fails, or a
-    /// [`ZkeyError::ZKeyFingerprintMismatch`] if the downloaded bytes do not
+    /// [`ZkeyError::ZkeyFingerprintMismatch`] if the downloaded bytes do not
     /// match the expected fingerprints.
     #[cfg(feature = "reqwest")]
     pub async fn from_urls(

@@ -24,7 +24,7 @@
 //IN CONNECTION WITH THE SOFTWARE O THE USE OR OTHER
 //DEALINGS IN THE SOFTWARE.R
 
-//! This module defines the [`ZKey`] struct that implements deserialization of circom zkey files via [`ZKey::from_reader`].
+//! This module defines the [`Zkey`] struct that implements deserialization of circom zkey files via [`Zkey::from_reader`].
 use ark_ec::pairing::Pairing;
 use ark_ff::PrimeField;
 use ark_poly::{Polynomial, univariate::DensePolynomial};
@@ -33,7 +33,7 @@ use std::io::{Cursor, Read};
 use taceo_ark_serde_compat::CheckElement;
 
 use crate::{
-    binfile::{BinFile, ZKeyParserError, ZKeyParserResult},
+    binfile::{BinFile, ZkeyParserError, ZkeyParserResult},
     traits::CircomArkworksPairingBridge,
 };
 
@@ -43,9 +43,9 @@ macro_rules! u32_to_usize {
     };
 }
 
-/// Represents a zkey in the format defined by circom. Implements [`ZKey::from_reader`] to deserialize a zkey from a reader.
+/// Represents a zkey in the format defined by circom. Implements [`Zkey::from_reader`] to deserialize a zkey from a reader.
 #[derive(Clone)]
-pub struct ZKey<P: Pairing> {
+pub struct Zkey<P: Pairing> {
     /// The amount of vars in the circuit
     pub n_vars: usize,
     /// The amount of public values in the circuit
@@ -90,7 +90,7 @@ pub struct ZKey<P: Pairing> {
     pub p_tau: Vec<P::G1Affine>,
 }
 
-/// A polynomial in coefficient and evaluation form for PLONK's [ZKey].
+/// A polynomial in coefficient and evaluation form for PLONK's [Zkey].
 #[derive(Clone)]
 pub struct CircomPolynomial<F: PrimeField> {
     /// The polynomial's coefficient form
@@ -127,28 +127,28 @@ pub struct VerifyingKey<P: Pairing> {
     pub k1: P::ScalarField,
     /// k2
     pub k2: P::ScalarField,
-    /// The evaluation of [`ZKey::qm_poly`] with [`ZKey::p_tau`]
+    /// The evaluation of [`Zkey::qm_poly`] with [`Zkey::p_tau`]
     pub qm: P::G1Affine,
-    /// The evaluation of [`ZKey::qr_poly`] with [`ZKey::p_tau`]
+    /// The evaluation of [`Zkey::qr_poly`] with [`Zkey::p_tau`]
     pub ql: P::G1Affine,
-    /// The evaluation of [`ZKey::ql_poly`] with [`ZKey::p_tau`]
+    /// The evaluation of [`Zkey::ql_poly`] with [`Zkey::p_tau`]
     pub qr: P::G1Affine,
-    /// The evaluation of [`ZKey::qo_poly`] with [`ZKey::p_tau`]
+    /// The evaluation of [`Zkey::qo_poly`] with [`Zkey::p_tau`]
     pub qo: P::G1Affine,
-    /// The evaluation of [`ZKey::qc_poly`] with [`ZKey::p_tau`]
+    /// The evaluation of [`Zkey::qc_poly`] with [`Zkey::p_tau`]
     pub qc: P::G1Affine,
-    /// The evaluation of [`ZKey::s1_poly`] with [`ZKey::p_tau`]
+    /// The evaluation of [`Zkey::s1_poly`] with [`Zkey::p_tau`]
     pub s1: P::G1Affine,
-    /// The evaluation of [`ZKey::s2_poly`] with [`ZKey::p_tau`]
+    /// The evaluation of [`Zkey::s2_poly`] with [`Zkey::p_tau`]
     pub s2: P::G1Affine,
-    /// The evaluation of [`ZKey::s3_poly`] with [`ZKey::p_tau`]
+    /// The evaluation of [`Zkey::s3_poly`] with [`Zkey::p_tau`]
     pub s3: P::G1Affine,
     /// x_2
     pub x_2: P::G2Affine,
 }
 
-impl<P: Pairing + CircomArkworksPairingBridge> ZKey<P> {
-    /// Deserializes a [`ZKey`] from a reader.
+impl<P: Pairing + CircomArkworksPairingBridge> Zkey<P> {
+    /// Deserializes a [`Zkey`] from a reader.
     ///
     /// You may use the second parameter to specify whether
     /// the deserialization should check if the elements are on
@@ -159,7 +159,7 @@ impl<P: Pairing + CircomArkworksPairingBridge> ZKey<P> {
     /// only with care.
     ///
     /// See [`CheckElement`].
-    pub fn from_reader<R: Read>(mut reader: R, check: CheckElement) -> ZKeyParserResult<Self> {
+    pub fn from_reader<R: Read>(mut reader: R, check: CheckElement) -> ZkeyParserResult<Self> {
         let mut binfile = BinFile::<P>::new(&mut reader)?;
 
         tracing::debug!("start transforming bin file into zkey...");
@@ -251,7 +251,7 @@ impl<P: Pairing + CircomArkworksPairingBridge> ZKey<P> {
     fn additions_indices<R: Read>(
         n_additions: usize,
         mut reader: R,
-    ) -> ZKeyParserResult<Vec<Additions<P>>> {
+    ) -> ZkeyParserResult<Vec<Additions<P>>> {
         let mut additions = Vec::with_capacity(n_additions);
         for _ in 0..n_additions {
             let signal_id1 = u32::deserialize_uncompressed(&mut reader)?;
@@ -268,7 +268,7 @@ impl<P: Pairing + CircomArkworksPairingBridge> ZKey<P> {
         Ok(additions)
     }
 
-    fn id_map<R: Read>(n_constraints: usize, mut reader: R) -> ZKeyParserResult<Vec<usize>> {
+    fn id_map<R: Read>(n_constraints: usize, mut reader: R) -> ZkeyParserResult<Vec<usize>> {
         let mut map = Vec::with_capacity(n_constraints);
         for _ in 0..n_constraints {
             map.push(u32_to_usize!(u32::deserialize_uncompressed(&mut reader)?));
@@ -279,7 +279,7 @@ impl<P: Pairing + CircomArkworksPairingBridge> ZKey<P> {
     fn evaluations<R: Read>(
         domain_size: usize,
         mut reader: R,
-    ) -> ZKeyParserResult<CircomPolynomial<P::ScalarField>> {
+    ) -> ZkeyParserResult<CircomPolynomial<P::ScalarField>> {
         let mut coeffs = Vec::with_capacity(domain_size);
         for _ in 0..domain_size {
             coeffs.push(P::fr_from_montgomery_reader(&mut reader)?);
@@ -299,7 +299,7 @@ impl<P: Pairing + CircomArkworksPairingBridge> ZKey<P> {
         n_public: usize,
         domain_size: usize,
         mut reader: R,
-    ) -> ZKeyParserResult<Vec<CircomPolynomial<P::ScalarField>>> {
+    ) -> ZkeyParserResult<Vec<CircomPolynomial<P::ScalarField>>> {
         let mut lagrange = Vec::with_capacity(n_public);
         for _ in 0..n_public {
             lagrange.push(Self::evaluations(domain_size, &mut reader)?);
@@ -311,14 +311,14 @@ impl<P: Pairing + CircomArkworksPairingBridge> ZKey<P> {
         domain_size: usize,
         reader: R,
         check: CheckElement,
-    ) -> ZKeyParserResult<Vec<P::G1Affine>> {
+    ) -> ZkeyParserResult<Vec<P::G1Affine>> {
         // //TODO: why domain size + 6?
         Ok(P::g1_vec_from_reader(reader, domain_size + 6, check)?)
     }
 }
 
 impl<P: Pairing + CircomArkworksPairingBridge> VerifyingKey<P> {
-    fn new<R: Read>(mut reader: R) -> ZKeyParserResult<Self> {
+    fn new<R: Read>(mut reader: R) -> ZkeyParserResult<Self> {
         let k1 = P::fr_from_montgomery_reader(&mut reader)?;
         let k2 = P::fr_from_montgomery_reader(&mut reader)?;
         let qm = P::g1_from_reader(&mut reader, CheckElement::Yes)?;
@@ -360,18 +360,18 @@ struct PlonkHeader<P: Pairing> {
 }
 
 impl<P: Pairing + CircomArkworksPairingBridge> PlonkHeader<P> {
-    fn read<R: Read>(mut reader: &mut R) -> ZKeyParserResult<Self> {
+    fn read<R: Read>(mut reader: &mut R) -> ZkeyParserResult<Self> {
         let n8q = u32::deserialize_uncompressed(&mut reader)?;
         //modulus of BaseField
         let q = <P::BaseField as PrimeField>::BigInt::deserialize_uncompressed(&mut reader)?;
         let expected_n8q = P::BaseField::MODULUS_BIT_SIZE.div_ceil(8);
         tracing::debug!("base field byte size: {n8q}");
         if n8q != expected_n8q {
-            return Err(ZKeyParserError::UnexpectedByteSize(expected_n8q, n8q));
+            return Err(ZkeyParserError::UnexpectedByteSize(expected_n8q, n8q));
         }
         let modulus = <P::BaseField as PrimeField>::MODULUS;
         if q != modulus {
-            return Err(ZKeyParserError::InvalidPrimeInHeader);
+            return Err(ZkeyParserError::InvalidPrimeInHeader);
         }
         let n8r = u32::deserialize_uncompressed(&mut reader)?;
         //modulus of ScalarField
@@ -379,13 +379,13 @@ impl<P: Pairing + CircomArkworksPairingBridge> PlonkHeader<P> {
         tracing::debug!("scalar field byte size: {n8r}");
         let expected_n8r = P::ScalarField::MODULUS_BIT_SIZE.div_ceil(8);
         if n8r != expected_n8r {
-            return Err(ZKeyParserError::UnexpectedByteSize(expected_n8r, n8r));
+            return Err(ZkeyParserError::UnexpectedByteSize(expected_n8r, n8r));
         }
 
         let n8r = usize::try_from(n8r).expect("works after check");
         let modulus = <P::ScalarField as PrimeField>::MODULUS;
         if r != modulus {
-            return Err(ZKeyParserError::InvalidPrimeInHeader);
+            return Err(ZkeyParserError::InvalidPrimeInHeader);
         }
         let n_vars = u32::deserialize_uncompressed(&mut reader)?;
         let n_public = u32::deserialize_uncompressed(&mut reader)?;
@@ -407,7 +407,7 @@ impl<P: Pairing + CircomArkworksPairingBridge> PlonkHeader<P> {
                 verifying_key,
             })
         } else {
-            Err(ZKeyParserError::CorruptedBinFile(format!(
+            Err(ZkeyParserError::CorruptedBinFile(format!(
                 "Invalid domain size {domain_size}. Must be power of 2"
             )))
         }

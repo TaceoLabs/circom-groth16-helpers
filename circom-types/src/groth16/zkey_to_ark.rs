@@ -4,11 +4,11 @@ use ark_groth16::{ProvingKey, VerifyingKey};
 use ark_relations::r1cs::ConstraintMatrices;
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, Valid};
 
-use crate::groth16::ZKey;
+use crate::groth16::Zkey;
 
 /// Wrapper type to serialize [`ConstraintMatrices`] and [`ProvingKey`]s as a combined type.
 ///
-/// Provides `From` implementations to convert to a [`ZKey`] or the inner types.
+/// Provides `From` implementations to convert to a [`Zkey`] or the inner types.
 #[derive(Clone, CanonicalSerialize, CanonicalDeserialize)]
 pub struct ArkZkey<P: Pairing> {
     /// The [`ConstraintMatricesWrapper`] to be able to use `ark-serialize`.
@@ -152,8 +152,8 @@ impl<P: Pairing> From<ArkZkey<P>> for (ConstraintMatrices<P::ScalarField>, Provi
     }
 }
 
-impl<P: Pairing> From<ZKey<P>> for (ConstraintMatrices<P::ScalarField>, ProvingKey<P>) {
-    fn from(zkey: ZKey<P>) -> Self {
+impl<P: Pairing> From<Zkey<P>> for (ConstraintMatrices<P::ScalarField>, ProvingKey<P>) {
+    fn from(zkey: Zkey<P>) -> Self {
         (
             ConstraintMatrices {
                 num_instance_variables: zkey.n_public + 1,
@@ -186,8 +186,8 @@ impl<P: Pairing> From<ZKey<P>> for (ConstraintMatrices<P::ScalarField>, ProvingK
     }
 }
 
-impl<P: Pairing> From<ZKey<P>> for ArkZkey<P> {
-    fn from(zkey: ZKey<P>) -> Self {
+impl<P: Pairing> From<Zkey<P>> for ArkZkey<P> {
+    fn from(zkey: Zkey<P>) -> Self {
         let (matrices, pk) = (
             ConstraintMatrices {
                 num_instance_variables: zkey.n_public + 1,

@@ -17,6 +17,6 @@ pub use public_input::PublicInput;
 #[cfg(feature = "verification-key")]
 pub use verification_key::VerificationKey;
 #[cfg(feature = "zkey")]
-pub use zkey::ZKey;
+pub use zkey::Zkey;
 #[cfg(feature = "zkey")]
 pub use zkey_to_ark::{ArkZkey, ConstraintMatricesWrapper};

@@ -12,4 +12,4 @@ pub use proof::PlonkProof;
 #[cfg(feature = "verification-key")]
 pub use verification_key::VerificationKey;
 #[cfg(feature = "zkey")]
-pub use zkey::{Additions, CircomPolynomial, VerifyingKey, ZKey};
+pub use zkey::{Additions, CircomPolynomial, VerifyingKey, Zkey};
