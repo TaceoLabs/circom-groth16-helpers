@@ -29,3 +29,9 @@ pub fn affine_to_u256_vec(p: ark_babyjubjub::EdwardsAffine) -> Vec<U256> {
 pub fn affine_seq_to_u256_vec(ps: &[ark_babyjubjub::EdwardsAffine]) -> Vec<U256> {
     ps.iter().copied().flat_map(affine_to_u256_vec).collect()
 }
+
+impl ProofInput for HashMap<String, Vec<U256>> {
+    fn prepare_input(&self) -> HashMap<String, Vec<U256>> {
+        self.to_owned()
+    }
+}
