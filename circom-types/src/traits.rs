@@ -3,8 +3,8 @@
 use std::io::Read;
 
 use ark_ec::pairing::Pairing;
+use ark_serde_compat::{CanonicalJsonSerialize, CheckElement};
 use ark_serialize::SerializationError;
-use taceo_ark_serde_compat::{CanonicalJsonSerialize, CheckElement};
 #[allow(unused)]
 type SerResult<T> = Result<T, SerializationError>;
 
@@ -17,7 +17,7 @@ macro_rules! impl_serde_for_curve {
 
             use ark_ec::AffineRepr;
             use ark_ff::{PrimeField, Zero};
-            use taceo_ark_serde_compat::CheckElement;
+            use ark_serde_compat::CheckElement;
 
             use ark_serialize::{CanonicalDeserialize, SerializationError};
             use $curve::{Fq2, $config};

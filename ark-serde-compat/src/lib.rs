@@ -24,8 +24,8 @@
 //!
 //! #[derive(Serialize, Deserialize)]
 //! struct MyStruct {
-//!     #[serde(serialize_with = "taceo_ark_serde_compat::serialize_f")]
-//!     #[serde(deserialize_with = "taceo_ark_serde_compat::deserialize_f")]
+//!     #[serde(serialize_with = "ark_serde_compat::serialize_f")]
+//!     #[serde(deserialize_with = "ark_serde_compat::deserialize_f")]
 //!     field: Fr,
 //! }
 //! ```
@@ -38,8 +38,8 @@
 //!
 //! #[derive(Serialize, Deserialize)]
 //! struct MyStruct {
-//!     #[serde(serialize_with = "taceo_ark_serde_compat::bn254::serialize_g1")]
-//!     #[serde(deserialize_with = "taceo_ark_serde_compat::bn254::deserialize_g1")]
+//!     #[serde(serialize_with = "ark_serde_compat::bn254::serialize_g1")]
+//!     #[serde(deserialize_with = "ark_serde_compat::bn254::deserialize_g1")]
 //!     point: G1Affine,
 //! }
 //! ```
@@ -162,7 +162,7 @@ pub enum CheckElement {
 ///
 /// #[derive(Serialize)]
 /// struct MyStruct {
-///     #[serde(serialize_with = "taceo_ark_serde_compat::serialize_f")]
+///     #[serde(serialize_with = "ark_serde_compat::serialize_f")]
 ///     field: Fr,
 /// }
 /// ```
@@ -183,7 +183,7 @@ pub fn serialize_f<S: Serializer>(p: &impl PrimeField, ser: S) -> Result<S::Ok, 
 ///
 /// #[derive(Serialize)]
 /// struct MyStruct {
-///     #[serde(serialize_with = "taceo_ark_serde_compat::serialize_f_seq")]
+///     #[serde(serialize_with = "ark_serde_compat::serialize_f_seq")]
 ///     fields: Vec<Fr>,
 /// }
 /// ```
@@ -208,7 +208,7 @@ pub fn serialize_f_seq<S: Serializer, F: PrimeField>(ps: &[F], ser: S) -> Result
 ///
 /// #[derive(Deserialize)]
 /// struct MyStruct {
-///     #[serde(deserialize_with = "taceo_ark_serde_compat::deserialize_f")]
+///     #[serde(deserialize_with = "ark_serde_compat::deserialize_f")]
 ///     field: Fr,
 /// }
 /// ```
@@ -233,7 +233,7 @@ where
 ///
 /// #[derive(Deserialize)]
 /// struct MyStruct {
-///     #[serde(deserialize_with = "taceo_ark_serde_compat::deserialize_f_seq")]
+///     #[serde(deserialize_with = "ark_serde_compat::deserialize_f_seq")]
 ///     fields: Vec<Fr>,
 /// }
 /// ```

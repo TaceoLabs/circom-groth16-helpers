@@ -8,8 +8,8 @@ use serde::{Deserialize, Serialize};
 #[serde(transparent)]
 pub struct PublicInput<F: PrimeField>(
     /// The values of the public input.
-    #[serde(serialize_with = "taceo_ark_serde_compat::serialize_f_seq")]
-    #[serde(deserialize_with = "taceo_ark_serde_compat::deserialize_f_seq")]
+    #[serde(serialize_with = "ark_serde_compat::serialize_f_seq")]
+    #[serde(deserialize_with = "ark_serde_compat::deserialize_f_seq")]
     pub Vec<F>,
 );
 

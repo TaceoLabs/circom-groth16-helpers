@@ -3,8 +3,8 @@ use std::io::Read;
 
 use ark_ec::pairing::Pairing;
 use ark_groth16::VerifyingKey;
+use ark_serde_compat::CanonicalJsonSerialize;
 use serde::{Deserialize, Serialize};
-use taceo_ark_serde_compat::CanonicalJsonSerialize;
 
 /// Represents a verification key in JSON format that was created by circom. Supports de/serialization using [`serde`].
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

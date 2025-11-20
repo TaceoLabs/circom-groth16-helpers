@@ -1,11 +1,23 @@
 [package]
-name = "circom-types"
+name = "taceo-circom-types"
 version = "0.1.0"
-authors.workspace = true
 edition.workspace = true
 rust-version.workspace = true
+description = "This crate provides a Rust representation of the types in the `circom` ecosystem and ways to de/serialize them in a way that is compatible to the existing implementation in snarkjs."
+readme = "./README.md"
+homepage.workspace = true
 repository.workspace = true
 license.workspace = true
+keywords = [
+  "circom",
+  "groth16",
+  "plonk",
+  "serde",
+  "snarkjs",
+  "zero-knowledge",
+  "zk"
+]
+exclude = ["kats"]
 
 [package.metadata.cargo-all-features]
 skip_feature_sets = [
@@ -28,6 +40,7 @@ ark-ff = { workspace = true }
 ark-groth16 = { workspace = true, optional = true }
 ark-poly = { workspace = true }
 ark-relations = { workspace = true, optional = true }
+ark-serde-compat = { workspace = true }
 ark-serialize = { workspace = true }
 ark-std = { workspace = true, optional = true }
 byteorder = { workspace = true }
@@ -37,7 +50,6 @@ num-traits = { workspace = true }
 rayon = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
-taceo-ark-serde-compat = { workspace = true }
 thiserror = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"], optional = true }
@@ -55,8 +67,8 @@ bin = [
   "groth16",
   "zkey"
 ]
-bls12-381 = ["dep:ark-bls12-381", "taceo-ark-serde-compat/bls12-381"]
-bn254 = ["dep:ark-bn254", "taceo-ark-serde-compat/bn254"]
+bls12-381 = ["ark-serde-compat/bls12-381", "dep:ark-bls12-381"]
+bn254 = ["ark-serde-compat/bn254", "dep:ark-bn254"]
 full = ["bls12-381", "bn254", "full-groth16", "full-plonk"]
 full-groth16 = [
   "groth16",

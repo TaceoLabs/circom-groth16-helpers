@@ -38,7 +38,7 @@ use crate::{
     traits::CircomArkworksPairingBridge,
 };
 
-use taceo_ark_serde_compat::CheckElement;
+use ark_serde_compat::CheckElement;
 
 macro_rules! u32_to_usize {
     ($x: expr) => {

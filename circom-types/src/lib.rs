@@ -31,7 +31,7 @@ pub use witness::WitnessParserError;
 #[cfg(all(feature = "zkey", any(feature = "groth16", feature = "plonk")))]
 pub use binfile::ZkeyParserError;
 
-pub use taceo_ark_serde_compat::CheckElement;
+pub use ark_serde_compat::CheckElement;
 
 // re-export ark_bn254
 #[cfg(feature = "bn254")]
