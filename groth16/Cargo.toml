@@ -9,6 +9,7 @@ homepage.workspace = true
 repository.workspace = true
 license.workspace = true
 keywords = ["circom", "groth16", "libsnark", "snarkjs", "zero-knowledge", "zk"]
+exclude = [".gitignore"]
 
 [[bench]]
 harness = false
