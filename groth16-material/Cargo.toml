@@ -5,6 +5,8 @@ edition.workspace = true
 rust-version.workspace = true
 repository.workspace = true
 license.workspace = true
+description = "A collection of utilities for generating witnesses and proofs for Groth16 circuits. Supports Circom circuits for now."
+readme = "./README.md"
 
 [package.metadata.cargo-all-features]
 skip_feature_sets = [
