@@ -26,7 +26,7 @@ circom-types = { package = "taceo-circom-types", path = "circom-types", version 
 circom-witness-rs = "0.2.1"
 clap = { version = "4.4.8", features = ["derive"] }
 eyre = "0.6"
-groth16 = { git = "https://github.com/TaceoLabs/groth16.git" }
+groth16 = { package = "taceo-groth16", path = "groth16", version = "0.1" }
 hex = "0.4"
 num-bigint = "0.4"
 num-traits = "0.2"
