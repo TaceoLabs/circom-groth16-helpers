@@ -36,9 +36,9 @@ pub trait ProofInput {
     ///
     /// # Example
     /// ```rust
-    /// #use std::collections::HashMap;
-    /// #use ruint::aliases::U256;
-    /// #use taceo_groth16_material::circom::ProofInput;
+    /// # use std::collections::HashMap;
+    /// # use ruint::aliases::U256;
+    /// # use taceo_groth16_material::circom::ProofInput;
     ///
     /// struct MyInput {
     ///    a: U256,
@@ -199,7 +199,7 @@ impl CircomGroth16MaterialBuilder {
     /// Adds the standard black-box function `bbf_inv` for field inversion.
     ///
     /// The function implements the following Circom logic:
-    /// ```
+    /// ```text
     /// function bbf_inv(in) {
     ///     return in!=0 ? 1/in : 0;
     /// }
@@ -221,7 +221,7 @@ impl CircomGroth16MaterialBuilder {
     /// Adds a black-box function `bbf_legendre` for computing the legendre symbol.
     ///
     /// The function implements the following Circom logic:
-    /// ```
+    /// ```text
     /// function bbf_legendre(in) {
     ///     return in!=0 ? 1/in : 0;
     /// }
@@ -255,7 +255,7 @@ impl CircomGroth16MaterialBuilder {
     /// Adds a black-box function `bbf_sqrt_input` for selecting between two field elements based on a condition.
     ///
     /// The function implements the following Circom logic:
-    /// ```
+    /// ```text
     /// function bbf_sqrt_input(l, a, na) {
     ///   if (l != -1) {
     ///     return a;
@@ -288,7 +288,7 @@ impl CircomGroth16MaterialBuilder {
     /// Adds a black-box function `bbf_num_2_bits_helper`.
     ///
     /// The function implements the following Circom logic:
-    /// ```
+    /// ```text
     /// function bbf_num_2_bits_helper(in, i) {
     ///     return (in >> i) & 1;
     /// }
