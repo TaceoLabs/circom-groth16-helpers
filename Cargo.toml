@@ -30,7 +30,7 @@ groth16 = { package = "taceo-groth16", path = "groth16", version = "0.1" }
 hex = "0.4"
 num-bigint = "0.4"
 num-traits = "0.2"
-rand = "0.8"
+rand = "0.9"
 rayon = "1.8"
 reqwest = { version = "0.12", default-features = false, features = [
   "rustls-tls"
