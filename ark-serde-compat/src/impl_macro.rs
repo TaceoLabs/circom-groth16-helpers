@@ -114,7 +114,7 @@ macro_rules! impl_json_canonical {
                 "where each projective coordinate is an Fq2 element represented by a pair of decimal strings.\n\n",
                 "This helper forwards to `crate::serialize_g2`."
             )]
-            pub fn serialize_g2<F, S: Serializer>(p: &$curve::G2Affine, ser: S) -> Result<S::Ok, S::Error>
+            pub fn serialize_g2<S: Serializer>(p: &$curve::G2Affine, ser: S) -> Result<S::Ok, S::Error>
             {
                 crate::serialize_g2(p, ser)
             }
