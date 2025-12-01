@@ -11,8 +11,11 @@ This crate provides serde-compatible serialization and deserialization functions
 
 ## Features
 
-- `bn254` (default): Enables serialization support for BN254 curve types
-- `babyjubjub` (default): Enables serialization support for BabyJubJub curve types
+- `bn254`: Enables serialization support for BN254 curve types
+- `bls12-381`: Enables serialization support for BLS12-381 curve types
+- `babyjubjub`: Enables serialization support for BabyJubJub curve types
+
+None of the features is enabled by default.
 
 ## Usage
 
