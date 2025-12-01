@@ -11,14 +11,21 @@ repository.workspace = true
 license.workspace = true
 exclude = ["/data"]
 
+[[bin]]
+name = "gnark-sol-extractor"
+path = "src/bin/gnark-sol-extractor.rs"
+required-features = ["bin"]
+
 [dependencies]
+alloy-primitives = "1"
 ark-bn254.workspace = true
 ark-ec.workspace = true
 ark-ff.workspace = true
 ark-groth16.workspace = true
-askama = {version = "0.14.0", optional = true}
+askama = { version = "0.14.0", optional = true }
+circom-types = { workspace = true, optional = true }
+clap = { workspace = true, features = ["derive"], optional = true }
 eyre.workspace = true
-alloy-primitives = "1"
 ruint = { workspace = true, features = ["ark-ff-05"] }
 
 [dev-dependencies]
@@ -27,4 +34,5 @@ serde_json.workspace = true
 
 [features]
 default = ["template"]
+bin = ["circom-types", "clap", "template"]
 template = ["askama"]
